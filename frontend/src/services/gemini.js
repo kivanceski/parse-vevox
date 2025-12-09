@@ -3,7 +3,9 @@ import { GoogleGenerativeAI } from "@google/generative-ai";
 export const getAvailableModels = async (apiKey) => {
   if (!apiKey) return [];
   try {
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`,
+    );
     if (!response.ok) {
       throw new Error(`Failed to fetch models: ${response.statusText}`);
     }
@@ -15,12 +17,20 @@ export const getAvailableModels = async (apiKey) => {
   }
 };
 
-export const classifyMessages = async (apiKey, messages, categories, modelName = "gemini-1.5-pro") => {
+export const classifyMessages = async (
+  apiKey,
+  messages,
+  categories,
+  modelName = "gemini-3-pro-preview",
+) => {
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ model: modelName });
 
-  const simplifiedMessages = messages.map(m => ({ id: m.id, text: m.message }));
-  
+  const simplifiedMessages = messages.map((m) => ({
+    id: m.id,
+    text: m.message,
+  }));
+
   // We don't strictly need to pass the categories list if we hardcode the logic in the prompt as per requirements,
   // but it helps to be explicit.
   const targetCategories = "ui_ux, library, ai, headless, uncategorized";
@@ -62,10 +72,13 @@ export const classifyMessages = async (apiKey, messages, categories, modelName =
     const result = await model.generateContent(prompt);
     const response = await result.response;
     let text = response.text();
-    
+
     // Cleanup markdown if present
-    text = text.replace(/```json/g, '').replace(/```/g, '').trim();
-    
+    text = text
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
+
     return JSON.parse(text);
   } catch (error) {
     console.error("Gemini API Error:", error);

@@ -9,7 +9,7 @@ import cors from "cors";
 // Set to true to return mock data from data.json
 // Set to false to scrape from actual URL
 // ===========================================
-const MOCK_MODE = true;
+const MOCK_MODE = false;
 
 /**
  * Fetch HTML content from a URL using Puppeteer (supports JavaScript-rendered content)
@@ -35,7 +35,7 @@ async function fetchHTML(url) {
         timeout: 30000,
       })
       .catch(() =>
-        console.log("Warning: Message cards not found, proceeding anyway...")
+        console.log("Warning: Message cards not found, proceeding anyway..."),
       );
 
     // Scroll down to trigger lazy loading of messages
@@ -116,7 +116,7 @@ function parseQAMessages(htmlContent) {
 
   // Filter out empty messages (no content AND no timestamp)
   const filteredMessages = messages.filter(
-    (msg) => msg.message || msg.timestamp
+    (msg) => msg.message || msg.timestamp,
   );
 
   // Sort by likes (highest to lowest)
@@ -152,7 +152,7 @@ async function main() {
       console.log("=".repeat(60));
       console.log(`\nTotal Messages: ${result.totalMessages}`);
       console.log(`Total Likes: ${result.totalLikes}`);
-      
+
       const outputPath = "./frontend/public/data.json";
       try {
         writeFileSync(outputPath, JSON.stringify(result, null, 2));
@@ -182,12 +182,18 @@ async function main() {
       if (MOCK_MODE) {
         console.log(`[MOCK MODE] Returning mock data for: ${url}`);
         try {
-          const mockData = JSON.parse(readFileSync("./mock-data.json", "utf-8"));
-          console.log(`[MOCK MODE] Returning ${mockData.totalMessages} messages`);
+          const mockData = JSON.parse(
+            readFileSync("./mock-data.json", "utf-8"),
+          );
+          console.log(
+            `[MOCK MODE] Returning ${mockData.totalMessages} messages`,
+          );
           return res.json(mockData);
         } catch (error) {
           console.error("[MOCK MODE] Error reading mock data:", error);
-          return res.status(500).json({ error: "Failed to read mock data: " + error.message });
+          return res
+            .status(500)
+            .json({ error: "Failed to read mock data: " + error.message });
         }
       }
 
@@ -199,7 +205,9 @@ async function main() {
         res.json(result);
       } catch (error) {
         console.error("Scraping error:", error);
-        res.status(500).json({ error: "Failed to scrape URL: " + error.message });
+        res
+          .status(500)
+          .json({ error: "Failed to scrape URL: " + error.message });
       }
     });
 
@@ -211,7 +219,7 @@ async function main() {
 }
 
 // Run the parser
-main().catch(err => {
+main().catch((err) => {
   console.error("Fatal error:", err);
   process.exit(1);
 });
