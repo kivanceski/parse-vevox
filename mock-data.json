@@ -1,0 +1,21 @@
+{
+  "totalMessages": 15,
+  "totalLikes": 120,
+  "messages": [
+    { "id": 1, "timestamp": "09:00", "message": "Takeoff UI library is incredibly easy to use, great job!", "likes": 15 },
+    { "id": 2, "timestamp": "09:15", "message": "I'm having trouble with the Headless UI combobox state management.", "likes": 8 },
+    { "id": 3, "timestamp": "09:30", "message": "GenFly AI generated images are stunning, but resolution is low.", "likes": 12 },
+    { "id": 4, "timestamp": "09:45", "message": "The Takeoff MCP server documentation is missing some endpoints.", "likes": 5 },
+    { "id": 5, "timestamp": "10:00", "message": "Can we improve the UX of the onboarding flow? It feels clunky.", "likes": 20 },
+    { "id": 6, "timestamp": "10:15", "message": "Is the new headless modal accessible by default?", "likes": 6 },
+    { "id": 7, "timestamp": "10:30", "message": "Takeoff needs more color palette options in the theme config.", "likes": 4 },
+    { "id": 8, "timestamp": "10:45", "message": "The AI suggestions in the code editor are spot on!", "likes": 10 },
+    { "id": 9, "timestamp": "11:00", "message": "I found a bug in the GenFly export feature.", "likes": 3 },
+    { "id": 10, "timestamp": "11:15", "message": "What is the browser support for the new Takeoff components?", "likes": 7 },
+    { "id": 11, "timestamp": "11:30", "message": "The dashboard design is very clean and modern.", "likes": 18 },
+    { "id": 12, "timestamp": "11:45", "message": "How do I integrate Takeoff with Next.js App Router?", "likes": 9 },
+    { "id": 13, "timestamp": "12:00", "message": "Just a general question about the roadmap.", "likes": 1 },
+    { "id": 14, "timestamp": "12:15", "message": "The new headless toggle switch is exactly what we needed.", "likes": 2 },
+    { "id": 15, "timestamp": "12:30", "message": "Can we get a dark mode for the docs?", "likes": 0 }
+  ]
+}

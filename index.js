@@ -1,8 +1,15 @@
 import * as cheerio from "cheerio";
 import puppeteer from "puppeteer";
-import { writeFileSync } from "fs";
+import { writeFileSync, readFileSync } from "fs";
 import express from "express";
 import cors from "cors";
+
+// ===========================================
+// MOCK MODE CONFIGURATION
+// Set to true to return mock data from data.json
+// Set to false to scrape from actual URL
+// ===========================================
+const MOCK_MODE = true;
 
 /**
  * Fetch HTML content from a URL using Puppeteer (supports JavaScript-rendered content)
@@ -171,6 +178,19 @@ async function main() {
         return res.status(400).json({ error: "URL is required" });
       }
 
+      // Mock mode: return data from data.json instead of scraping
+      if (MOCK_MODE) {
+        console.log(`[MOCK MODE] Returning mock data for: ${url}`);
+        try {
+          const mockData = JSON.parse(readFileSync("./mock-data.json", "utf-8"));
+          console.log(`[MOCK MODE] Returning ${mockData.totalMessages} messages`);
+          return res.json(mockData);
+        } catch (error) {
+          console.error("[MOCK MODE] Error reading mock data:", error);
+          return res.status(500).json({ error: "Failed to read mock data: " + error.message });
+        }
+      }
+
       console.log(`Received scrape request for: ${url}`);
       try {
         const htmlContent = await fetchHTML(url);
@@ -191,4 +211,7 @@ async function main() {
 }
 
 // Run the parser
-main();
+main().catch(err => {
+  console.error("Fatal error:", err);
+  process.exit(1);
+});
