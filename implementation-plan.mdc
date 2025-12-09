@@ -1,0 +1,40 @@
+# Implementation Plan - Vevox Parser & Kanban UI
+
+This plan outlines the steps to build a modern Kanban-style UI for visualizing and categorizing Vevox Q&A data with Gemini AI integration.
+
+## Proposed Tech Stack
+- Frontend: React (Vite)
+- Styling: Tailwind CSS
+- Drag & Drop: @hello-pangea/dnd
+- AI Integration: Google Generative AI SDK
+- Persistence: LocalStorage
+
+## Steps
+
+- [x] Modify `index.js` to export data to `frontend/public/data.json` instead of just console logging. Done.
+- [x] Initialize React Vite project in `frontend` directory. Done.
+- [x] Install dependencies (Tailwind, DnD library, Lucide icons, Google Gen AI SDK). Done.
+- [x] Configure Tailwind CSS. Done.
+- [x] Create `MessageCard` component. Done.
+- [x] Create `KanbanColumn` component. Done.
+- [x] Create `KanbanBoard` container with Drag and Drop logic. Done (in App.jsx).
+- [x] Implement `DataManager` hook for loading data and syncing with LocalStorage. Done.
+- [x] Implement `GeminiService` to handle categorization requests. Done.
+- [x] Build the main UI layout (Header, Board, AI Trigger Button). Done.
+- [x] Add settings/modal to input Gemini API Key and define custom categories. (Input added in Header). Done.
+- [ ] Verify functionality (Drag & Drop, Persistence, AI Categorization). User to verify.
+- [x] Add selectable export options with dropdown menu. Done.
+  - Kanban JSON export (current board state)
+  - Raw Data JSON export (original fetched messages)
+  - Category Images export (PNG per category with all cards)
+
+## How to Run
+
+1.  **Parser**: Run `node index.js <VEVOX_URL>` to fetch new data. It will save to `frontend/public/data.json`.
+2.  **Frontend**:
+    ```bash
+    cd frontend
+    npm install
+    npm run dev
+    ```
+3.  **AI Usage**: Enter your Gemini API Key in the header input and click "AI Categorize".

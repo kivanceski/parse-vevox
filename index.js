@@ -1,6 +1,8 @@
 import * as cheerio from "cheerio";
 import puppeteer from "puppeteer";
 import { writeFileSync } from "fs";
+import express from "express";
+import cors from "cors";
 
 /**
  * Fetch HTML content from a URL using Puppeteer (supports JavaScript-rendered content)
@@ -98,7 +100,7 @@ function parseQAMessages(htmlContent) {
       .trim();
 
     messages.push({
-      id: messages.length + 1,
+      id: messages.length + 1, // Will be re-assigned
       timestamp: timestamp,
       message: messageContent,
       likes: likes,
@@ -128,46 +130,63 @@ function parseQAMessages(htmlContent) {
 
 // Main execution
 async function main() {
-  try {
-    // Get URL from command line arguments
-    const url = process.argv[2];
+  const urlArg = process.argv[2];
 
-    if (!url) {
-      console.error("Error: URL is required");
-      console.log("Usage: npm start <URL>");
+  if (urlArg) {
+    // CLI Mode
+    try {
+      console.log(`Fetching HTML from URL: ${urlArg}\n`);
+      const htmlContent = await fetchHTML(urlArg);
+      const result = parseQAMessages(htmlContent);
+
+      // Display results
+      console.log("=".repeat(60));
+      console.log("Q&A MESSAGE PARSER RESULTS");
+      console.log("=".repeat(60));
+      console.log(`\nTotal Messages: ${result.totalMessages}`);
+      console.log(`Total Likes: ${result.totalLikes}`);
+      
+      const outputPath = "./frontend/public/data.json";
+      try {
+        writeFileSync(outputPath, JSON.stringify(result, null, 2));
+        console.log(`\nData saved to ${outputPath}`);
+      } catch (err) {
+        console.error(`Error saving data to ${outputPath}:`, err.message);
+      }
+    } catch (error) {
+      console.error("Error parsing HTML:", error.message);
       process.exit(1);
     }
+  } else {
+    // Server Mode
+    const app = express();
+    const PORT = 3000;
 
-    console.log(`Fetching HTML from URL: ${url}\n`);
-    const htmlContent = await fetchHTML(url);
+    app.use(cors());
+    app.use(express.json());
 
-    // Parse the Q&A messages
-    const result = parseQAMessages(htmlContent);
+    app.post("/api/scrape", async (req, res) => {
+      const { url } = req.body;
+      if (!url) {
+        return res.status(400).json({ error: "URL is required" });
+      }
 
-    // Display results
-    console.log("=".repeat(60));
-    console.log("Q&A MESSAGE PARSER RESULTS");
-    console.log("=".repeat(60));
-    console.log(`\nTotal Messages: ${result.totalMessages}`);
-    console.log(`Total Likes: ${result.totalLikes}`);
-    console.log("\n" + "-".repeat(60));
-    console.log("MESSAGES:");
-    console.log("-".repeat(60));
-
-    result.messages.forEach((msg, index) => {
-      console.log(`\n[${msg.id}] Likes: ${msg.likes} 👍`);
-      console.log(`    Time: ${msg.timestamp}`);
-      console.log(`    Message: "${msg.message}"`);
+      console.log(`Received scrape request for: ${url}`);
+      try {
+        const htmlContent = await fetchHTML(url);
+        const result = parseQAMessages(htmlContent);
+        console.log(`Successfully scraped ${result.totalMessages} messages`);
+        res.json(result);
+      } catch (error) {
+        console.error("Scraping error:", error);
+        res.status(500).json({ error: "Failed to scrape URL: " + error.message });
+      }
     });
 
-    console.log("\n" + "=".repeat(60));
-
-    // Also output as JSON for potential further processing
-    console.log("\nJSON Output:");
-    console.log(JSON.stringify(result, null, 2));
-  } catch (error) {
-    console.error("Error parsing HTML:", error.message);
-    process.exit(1);
+    app.listen(PORT, () => {
+      console.log(`\nServer running on http://localhost:${PORT}`);
+      console.log("Waiting for requests from Frontend...");
+    });
   }
 }
 
