@@ -1,7 +1,41 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 
 const STORAGE_KEY = 'vevox-kanban-data';
 const RAW_DATA_KEY = 'vevox-raw-data';
+
+/**
+ * Sort items by likes in descending order
+ * Handles edge cases: missing likes, non-numeric values, null/undefined items
+ */
+const sortByLikes = (items) => {
+  if (!Array.isArray(items)) return [];
+  return [...items].sort((a, b) => {
+    const likesA = typeof a?.likes === 'number' ? a.likes : 0;
+    const likesB = typeof b?.likes === 'number' ? b.likes : 0;
+    return likesB - likesA;
+  });
+};
+
+/**
+ * Sort all items in all columns by likes
+ */
+const sortAllColumnsByLikes = (columns) => {
+  if (!columns || typeof columns !== 'object') return columns;
+  
+  const sortedColumns = {};
+  Object.keys(columns).forEach(key => {
+    const column = columns[key];
+    if (column && Array.isArray(column.items)) {
+      sortedColumns[key] = {
+        ...column,
+        items: sortByLikes(column.items)
+      };
+    } else {
+      sortedColumns[key] = column;
+    }
+  });
+  return sortedColumns;
+};
 
 export const useKanbanData = () => {
   const [columns, setColumns] = useState({
@@ -52,7 +86,7 @@ export const useKanbanData = () => {
           // Check if the saved data has the new column structure. If not, we might need to migrate or reset.
           // Simple check: see if 'ui_ux' exists.
           if (parsed.columns && parsed.columns['ui_ux']) {
-              setColumns(parsed.columns);
+              setColumns(sortAllColumnsByLikes(parsed.columns));
               setColumnOrder(parsed.columnOrder);
           } else {
              // Migration or Fallback: If old structure, put everything in uncategorized
@@ -60,7 +94,7 @@ export const useKanbanData = () => {
              // but let's try to preserve items if possible.
              if (parsed.columns) {
                  const allItems = Object.values(parsed.columns).flatMap(c => c.items);
-                 setColumns(prev => ({
+                 setColumns(prev => sortAllColumnsByLikes({
                      ...prev,
                      'uncategorized': { ...prev.uncategorized, items: allItems }
                  }));
@@ -96,6 +130,9 @@ export const useKanbanData = () => {
 
     const sourceColumn = columns[source.droppableId];
     const destColumn = columns[destination.droppableId];
+    
+    if (!sourceColumn || !destColumn) return;
+    
     const sourceItems = [...sourceColumn.items];
     const destItems = source.droppableId === destination.droppableId 
       ? sourceItems 
@@ -103,6 +140,9 @@ export const useKanbanData = () => {
 
     const [removed] = sourceItems.splice(source.index, 1);
     destItems.splice(destination.index, 0, removed);
+
+    // Sort destination column by likes after adding the card
+    const sortedDestItems = sortByLikes(destItems);
 
     setColumns({
       ...columns,
@@ -112,7 +152,7 @@ export const useKanbanData = () => {
       },
       [destination.droppableId]: {
         ...destColumn,
-        items: destItems,
+        items: sortedDestItems,
       },
     });
   };
@@ -153,21 +193,30 @@ export const useKanbanData = () => {
       newColumns[targetCat].items.push(item);
     });
 
-    setColumns(newColumns);
+    // Sort all columns by likes after categorization
+    setColumns(sortAllColumnsByLikes(newColumns));
   };
 
   const addMessages = (messages) => {
-    // Store raw data for export
-    setRawData(prev => [...prev, ...messages]);
-    localStorage.setItem(RAW_DATA_KEY, JSON.stringify([...rawData, ...messages]));
+    if (!Array.isArray(messages) || messages.length === 0) return;
     
-    setColumns(prev => ({
-        ...prev,
-        'uncategorized': {
-            ...prev['uncategorized'],
-            items: [...prev['uncategorized'].items, ...messages]
-        }
-    }));
+    // Store raw data for export
+    setRawData(prev => {
+      const newRawData = [...prev, ...messages];
+      localStorage.setItem(RAW_DATA_KEY, JSON.stringify(newRawData));
+      return newRawData;
+    });
+    
+    setColumns(prev => {
+        const newItems = sortByLikes([...prev['uncategorized'].items, ...messages]);
+        return {
+            ...prev,
+            'uncategorized': {
+                ...prev['uncategorized'],
+                items: newItems
+            }
+        };
+    });
   };
 
   const resetData = () => {
