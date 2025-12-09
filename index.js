@@ -35,7 +35,7 @@ async function fetchHTML(url) {
         timeout: 30000,
       })
       .catch(() =>
-        console.log("Warning: Message cards not found, proceeding anyway..."),
+        console.log("Warning: Message cards not found, proceeding anyway...")
       );
 
     // Scroll down to trigger lazy loading of messages
@@ -116,7 +116,7 @@ function parseQAMessages(htmlContent) {
 
   // Filter out empty messages (no content AND no timestamp)
   const filteredMessages = messages.filter(
-    (msg) => msg.message || msg.timestamp,
+    (msg) => msg.message || msg.timestamp
   );
 
   // Sort by likes (highest to lowest)
@@ -183,10 +183,10 @@ async function main() {
         console.log(`[MOCK MODE] Returning mock data for: ${url}`);
         try {
           const mockData = JSON.parse(
-            readFileSync("./mock-data.json", "utf-8"),
+            readFileSync("./mock-data.json", "utf-8")
           );
           console.log(
-            `[MOCK MODE] Returning ${mockData.totalMessages} messages`,
+            `[MOCK MODE] Returning ${mockData.totalMessages} messages`
           );
           return res.json(mockData);
         } catch (error) {

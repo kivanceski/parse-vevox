@@ -17,7 +17,9 @@ function App() {
     addMessages,
     rawData,
   } = useKanbanData();
-  const [apiKey, setApiKey] = useState("");
+  const [apiKey, setApiKey] = useState(
+    import.meta.env.VITE_GEMINI_API_KEY || ""
+  );
   const [selectedModel, setSelectedModel] = useState(
     localStorage.getItem("gemini_model") || "gemini-3-pro-preview",
   );
